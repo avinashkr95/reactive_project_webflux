@@ -3,7 +3,9 @@ package com.reactive.ws.users.controller;
 import com.reactive.ws.users.model.AuthenticationRequest;
 import com.reactive.ws.users.service.AuthenticationService;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,7 +22,7 @@ public class AuthenticationController {
 
 
     @PostMapping("/login")
-    public Mono<ResponseEntity<Void>> login(@RequestBody Mono<AuthenticationRequest> authenticationRequestMono) {
+    public Mono<ResponseEntity<Object>> login(@RequestBody Mono<AuthenticationRequest> authenticationRequestMono) {
         return authenticationRequestMono
                 .flatMap(authenticationRequest ->
                         authenticationService.authenticate(authenticationRequest.getEmail(),
@@ -30,5 +32,10 @@ public class AuthenticationController {
                                 + authenticationMap.get("token"))
                         .header("UserId", authenticationMap.get("userId"))
                         .build());
+//                .onErrorReturn(BadCredentialsException.class,
+//                        ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                                .body("Invalid credentials"))
+//                .onErrorReturn(Exception.class,
+//                        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 }
