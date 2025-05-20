@@ -1,4 +1,4 @@
-package com.reactive.ws.users.service;
+package com.reactive.albumsws.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -23,12 +23,12 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public String generateJwt(String userId) {
+    public String generateJwt(String subject) {
         return Jwts
                 .builder()
-                .subject(userId) //Subject means the piece of information we added in JWT
+                .subject(subject)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(Date.from(Instant.now().plus(1, ChronoUnit.HOURS))) //JWT is valid for 1 hour
+                .expiration(Date.from(Instant.now().plus(1, ChronoUnit.HOURS)))
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -36,7 +36,7 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public Mono<Boolean> validateJwt(String token) {
         return Mono.just(token)
-                .map(jwt -> parseToken(jwt))
+                .map(jwt->parseToken(jwt))
                 .map(claims -> !claims.getExpiration().before(new Date()))
                 .onErrorReturn(false);
     }
@@ -47,8 +47,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     private Claims parseToken(String token) {
-        return Jwts
-                .parser()
+        return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
@@ -57,8 +56,8 @@ public class JwtServiceImpl implements JwtService {
 
     private SecretKey getSigningKey() {
         return Optional.ofNullable(environment.getProperty("token.secret"))
-                .map(tokenSecret -> tokenSecret.getBytes())
-                .map(tokenSecretBytes -> Keys.hmacShaKeyFor(tokenSecretBytes))
-                .orElseThrow(() -> new IllegalStateException("Token secret is not set"));
+                .map(tokenSecret->tokenSecret.getBytes())
+                .map(tokenSecretBytes-> Keys.hmacShaKeyFor(tokenSecretBytes))
+                .orElseThrow(()->new IllegalArgumentException("token.secret must be configured in the application.properties file"));
     }
 }

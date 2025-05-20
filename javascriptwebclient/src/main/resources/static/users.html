@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script>
+        const eventSource = new EventSource("http://localhost:8080/users/stream");
+        eventSource.onopen = (event) => {
+            console.log("Connection opened");
+        };
+
+        eventSource.onerror = (event) => {
+            console.log("EventSource failed");
+            eventSource.close();
+        };
+
+        eventSource.onmessage = (event) => {
+            console.log("Message received: " + event.data);
+            const userData = JSON.parse(event.data);
+            const userDiv = document.createElement("div");
+            userDiv.innerHTML = `
+            <p>ID: ${userData.id}</p>
+            <p>First Name: ${userData.firstName}</p>
+            <p>Last Name: ${userData.lastName}</p>
+            <p>Email: ${userData.email}</p>
+            <hr>
+            `;
+
+            const userInfoDiv = document.getElementById("userInfo");
+            userInfoDiv.appendChild(userDiv);
+        };
+    </script>
+</head>
+<body>
+    <div id="userInfo">
+
+    </div>
+</body>
+</html>
